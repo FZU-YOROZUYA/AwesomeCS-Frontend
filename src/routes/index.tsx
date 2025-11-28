@@ -12,6 +12,7 @@ import MyBlogs from '../views/MyBlogs';
 import LikeHistory from '../views/LikeHistory';
 import AccountSettings from '../views/AccountSettings';
 import { PersonalInfoContent } from '../views/PersonalInfo';
+import AIInterview from '../views/AIInterview';
 
 // 路由表项接口
 export interface RouteItem {
@@ -68,9 +69,14 @@ export const routes: RouteItem[] = [
     element: <BlogDetail />,
   },
   {
-    name: 'AI面试',
+    name: 'AI面试创建',
     path: 'ai-interview-create',
     element: <AIInterviewCreate />,
+  },
+  {
+    name: 'AI面试',
+    path: 'ai-interview',
+    element: <AIInterview />,
   },
   {
     name: '学习路线',

@@ -1,6 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const AIInterviewCreate: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -35,10 +38,14 @@ const AIInterviewCreate: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
+              <Link
+                to={'/ai-interview'}
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+              >
                 <i className="fas fa-play"></i>
                 <span>开始面试</span>
-              </button>
+              </Link>
             </div>
           </form>
         </div>
