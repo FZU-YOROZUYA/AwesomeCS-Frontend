@@ -23,6 +23,8 @@ interface BlogCardProps {
   viewCount?: number;
   /** 博客详情页路由路径 */
   detailPath?: string;
+  /** 博客 id（优先用于跳转） */
+  postId?: number | string;
 }
 
 /**
@@ -40,6 +42,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
   commentCount,
   viewCount,
   detailPath,
+  postId,
 }) => {
   const navigate = useNavigate();
 
@@ -80,8 +83,15 @@ const BlogCard: React.FC<BlogCardProps> = ({
   };
 
   const handleCardClick = () => {
-    if (detailPath) {
-      navigate(detailPath);
+    // if (detailPath) {
+    //   navigate(detailPath);
+    //   return;
+    // }
+    console.log('Card clicked:', { detailPath, postId });
+    
+    if (postId !== undefined && postId !== null) {
+      navigate(`/blog-detail/${postId}`);
+      return;
     }
   };
 

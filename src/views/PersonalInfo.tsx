@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   UserOutlined,
@@ -70,6 +70,54 @@ const PersonalInfo: React.FC = () => {
  * 个人信息内容组件（默认显示）
  */
 export const PersonalInfoContent: React.FC = () => {
+  // form state
+  const [avatarPreview, setAvatarPreview] = useState<string>('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face');
+  const [username, setUsername] = useState<string>('张三');
+  const [email, setEmail] = useState<string>('zhangsan@example.com');
+  const [phone, setPhone] = useState<string>('138****5678');
+  const [bio, setBio] = useState<string>('');
+  const [techs, setTechs] = useState<string>(''); // comma separated
+  const [targetJob, setTargetJob] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setAvatarPreview(result);
+    };
+    reader.readAsDataURL(f);
+  };
+
+  const onSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // 1) 如果头像是 data URL（从本地上传），先调用 avatar/update
+      if (avatarPreview && avatarPreview.startsWith('data:')) {
+        await axios.post('/api/user/avatar/update', { avatar: avatarPreview });
+      }
+
+      // 2) profile update: bio, techs(array), targetJob
+      const techsArr = techs
+        .split(',')
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
+
+      await axios.post('/api/user/profile/update', {
+        bio: bio,
+        techs: techsArr,
+        targetJob: targetJob,
+      });
+
+      alert('保存成功');
+    } catch (err) {
+      console.error(err);
+      alert('保存失败');
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
       <div className="px-8 py-6 border-b border-gray-200">
@@ -78,20 +126,23 @@ export const PersonalInfoContent: React.FC = () => {
       </div>
 
       <div className="px-8 py-8">
-        <form className="space-y-8">
+          <form className="space-y-8" onSubmit={onSave}>
           <div className="flex items-start space-x-6">
             <div className="flex-shrink-0">
               <label className="block text-sm font-semibold text-gray-900 mb-3">头像</label>
               <div className="relative">
                 <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face"
+                  src={avatarPreview}
                   alt="头像预览"
                   className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
                 />
-                <label className="absolute inset-0 w-24 h-24 rounded-full bg-black bg-opacity-0 hover:bg-opacity-40 flex items-center justify-center cursor-pointer transition-all group">
+                <label
+                  htmlFor="avatarInput"
+                  className="absolute inset-0 w-24 h-24 rounded-full bg-black bg-opacity-0 hover:bg-opacity-40 flex items-center justify-center cursor-pointer transition-all group"
+                >
                   <CameraOutlined className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </label>
-                <input type="file" accept="image/*" className="hidden" />
+                <input id="avatarInput" ref={fileInputRef} onChange={onFileChange} type="file" accept="image/*" className="hidden" />
               </div>
             </div>
             <div className="flex-1 pt-8">
@@ -108,8 +159,9 @@ export const PersonalInfoContent: React.FC = () => {
             </label>
             <input
               type="text"
-              defaultValue="张三"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
               placeholder="请输入用户名"
             />
           </div>
@@ -124,8 +176,9 @@ export const PersonalInfoContent: React.FC = () => {
               </div>
               <input
                 type="email"
-                defaultValue="zhangsan@example.com"
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                 placeholder="请输入邮箱地址"
               />
             </div>
@@ -141,8 +194,9 @@ export const PersonalInfoContent: React.FC = () => {
               </div>
               <input
                 type="tel"
-                defaultValue="138****5678"
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                 placeholder="请输入手机号码"
               />
             </div>
@@ -154,9 +208,11 @@ export const PersonalInfoContent: React.FC = () => {
             </label>
             <textarea
               rows={4}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none text-gray-900"
               placeholder="介绍一下自己吧..."
-            ></textarea>
+            />
             <p className="text-xs text-gray-500 mt-2">最多可输入 200 个字符</p>
           </div>
 
@@ -169,12 +225,13 @@ export const PersonalInfoContent: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={() => window.location.reload()}
               className="px-8 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
             >
               取消
             </button>
           </div>
-        </form>
+          </form>
       </div>
     </div>
   );

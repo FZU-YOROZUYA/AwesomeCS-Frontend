@@ -1,21 +1,69 @@
 import React, { useState } from 'react';
-import { Input, Checkbox, Button } from 'antd';
+import { Input, Checkbox, Button, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm: React.FC = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert('两次输入的密码不一致');
+      message.error('两次输入的密码不一致');
       return;
     }
-    console.log('注册:', { username, email, password, agreeTerms });
+    
+    try {
+      // Using default values for fields not present in the form yet
+      const response = await axios.post('http://localhost:8085/api/user/register', null, {
+        params: {
+          username,
+          password,
+          phone,
+          avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}`,
+          target_job: 'Full Stack Developer',
+          techs: 'Java,React',
+          bio: 'New user'
+        }
+      });
+
+      if (response.data.code === '0000') {
+        message.success('注册成功，正在为您登录');
+        // 自动登录
+        try {
+          const loginResp = await axios.post('http://localhost:8085/api/user/login/username', null, {
+            params: { username, password }
+          });
+          if (loginResp.data.code === '0000') {
+            const token = loginResp.data.data?.token || loginResp.data.data;
+            localStorage.setItem('token', token);
+            axios.defaults.headers.common['Authorization'] = token;
+            // redirect to personal info
+            navigate('/personal-info');
+            return;
+          }
+        } catch (err) {
+          console.error('自动登录失败', err);
+        }
+        // Reset form
+        setUsername('');
+        setPhone('');
+        setPassword('');
+        setConfirmPassword('');
+        setAgreeTerms(false);
+      } else {
+        message.error(response.data.info || '注册失败');
+      }
+    } catch (error) {
+      console.error('Register error:', error);
+      message.error('注册请求失败');
+    }
   };
 
   return (
@@ -32,12 +80,12 @@ const RegisterForm: React.FC = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">邮箱</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">手机号</label>
         <Input
-          type="email"
-          placeholder="邮箱"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="tel"
+          placeholder="手机号"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           size="large"
           required
         />

@@ -1,8 +1,55 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import BlogCard from '../components/BlogCard';
-import { mockBlogList } from '../mock/mockBlog';
 
 const BlogHome: React.FC = () => {
+  // local type for post summary coming from backend
+  interface PostSummary {
+    id: string;
+    title: string;
+    summary: string;
+    author: string;
+    authorAvatar: string;
+    likesCount: number;
+    commentsCount: number;
+    create_time: string;
+    view_count: number;
+    // category/tag may be present
+    category?: string;
+  }
+
+  const [posts, setPosts] = useState<PostSummary[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [size] = useState<number>(10);
+  const [total, setTotal] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const fetchPosts = async (p: number) => {
+    setLoading(true);
+    try {
+      const resp = await axios.get('http://localhost:8085/api/posts', {
+        params: { page: p, size }
+      });
+      if (resp.data && resp.data.code === '0000') {
+        const data = resp.data.data;
+        console.log('list',data.list);
+        
+        setPosts(data.list || []);
+        setTotal(data.total || 0);
+      } else {
+        console.error('listPosts error', resp.data);
+      }
+    } catch (err) {
+      console.error('fetch posts failed', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts(page);
+  }, [page]);
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-6">
@@ -38,21 +85,41 @@ const BlogHome: React.FC = () => {
 
           <main className="flex-1">
             <div className="space-y-4">
-              {mockBlogList.map((blog) => (
+              {loading && <div className="text-center py-8">加载中...</div>}
+              {!loading && posts.length === 0 && <div className="text-center py-8">暂无文章</div>}
+              {!loading && posts.map((post) => (
                 <BlogCard
-                  key={blog.id}
-                  category={blog.category}
-                  title={blog.title}
-                  content={blog.content}
-                  author={blog.author}
-                  authorAvatar={blog.authorAvatar}
-                  publishTime={blog.publishTime}
-                  likeCount={blog.likeCount}
-                  commentCount={blog.commentCount}
-                  viewCount={blog.viewCount}
-                  detailPath={blog.detailPath}
+                  key={post.id}
+                  category={post.category || '其他'}
+                  title={post.title}
+                  content={post.summary}
+                  author={post.author}
+                  authorAvatar={post.authorAvatar}
+                  publishTime={post.create_time}
+                  postId={post.id}
+                  likeCount={post.likesCount}
+                  commentCount={post.commentsCount}
+                  viewCount={post.view_count}
                 />
               ))}
+
+              <div className="flex items-center justify-center gap-4 py-6">
+                <button
+                  className="px-4 py-2 bg-white border rounded disabled:opacity-60"
+                  disabled={page <= 1}
+                  onClick={() => setPage((s) => Math.max(1, s - 1))}
+                >
+                  上一页
+                </button>
+                <div className="text-sm text-gray-600">第 {page} 页 / 共 {Math.ceil(total / size) || 1} 页</div>
+                <button
+                  className="px-4 py-2 bg-white border rounded disabled:opacity-60"
+                  disabled={page >= Math.ceil(total / size)}
+                  onClick={() => setPage((s) => s + 1)}
+                >
+                  下一页
+                </button>
+              </div>
             </div>
           </main>
 
@@ -63,17 +130,17 @@ const BlogHome: React.FC = () => {
                 热门文章
               </h3>
               <div className="space-y-3">
-                {mockBlogList
-                  .sort((a, b) => (b.likeCount + b.commentCount) - (a.likeCount + a.commentCount))
+                {[...posts]
+                  .sort((a, b) => ((b.likesCount || 0) + (b.commentsCount || 0)) - ((a.likesCount || 0) + (a.commentsCount || 0)))
                   .slice(0, 5)
-                  .map((blog, index) => (
-                    <div key={blog.id} className="flex items-start space-x-3">
+                  .map((post, index) => (
+                    <div key={post.id} className="flex items-start space-x-3">
                       <span className="text-red-500 font-bold text-sm">{index + 1}</span>
                       <a
-                        href={blog.detailPath}
+                        href={`/blog-detail/${post.id}`}
                         className="text-sm text-gray-700 hover:text-blue-600 line-clamp-2 flex-1"
                       >
-                        {blog.title}
+                        {post.title}
                       </a>
                     </div>
                   ))}

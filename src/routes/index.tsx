@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import BlogHome from '../views/BlogHome';
 import BlogDetail from '../views/BlogDetail';
 import AIInterviewCreate from '../views/AIInterviewCreate';
+import AIInterviewVoice from '../views/AIInterviewVoice';
 import LearningPath from '../views/LearningPath';
 import ExpertList from '../views/ExpertList';
 import ConsultationChat from '../views/ConsultationChat';
@@ -71,6 +72,11 @@ export const routes: RouteItem[] = [
     name: 'AI面试',
     path: 'ai-interview-create',
     element: <AIInterviewCreate />,
+  },
+  {
+    name: '语音面试',
+    path: 'ai-interview/:id',
+    element: <AIInterviewVoice />,
   },
   {
     name: '学习路线',
