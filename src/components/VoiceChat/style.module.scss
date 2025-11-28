@@ -1,0 +1,99 @@
+@reference '../../index.css';
+
+.container {
+  @apply flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white overflow-hidden relative;
+}
+
+.header {
+  @apply absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20;
+}
+
+.statusText {
+  @apply text-blue-900/50 font-medium tracking-widest text-sm uppercase;
+}
+
+.orbContainer {
+  @apply relative flex items-center justify-center h-80 w-80;
+}
+
+/* 波纹动画 */
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.ripple1 {
+  @apply absolute w-32 h-32 bg-blue-400/30 rounded-full;
+  animation: ripple 2s infinite ease-out;
+}
+
+.ripple2 {
+  @apply absolute w-32 h-32 bg-blue-400/20 rounded-full;
+  animation: ripple 2s infinite ease-out 0.6s;
+}
+
+.ripple3 {
+  @apply absolute w-32 h-32 bg-blue-400/10 rounded-full;
+  animation: ripple 2s infinite ease-out 1.2s;
+}
+
+/* 核心球体 */
+.coreOrb {
+  @apply relative z-10 w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-500 ease-in-out cursor-pointer;
+
+  &.listening {
+    @apply scale-110 shadow-[0_0_60px_rgba(59,130,246,0.6)];
+  }
+
+  &.speaking {
+    @apply scale-105 shadow-[0_0_50px_rgba(59,130,246,0.4)];
+  }
+
+  &.processing {
+    @apply scale-95 shadow-[0_0_30px_rgba(59,130,246,0.4)];
+  }
+}
+
+.orbGloss {
+  @apply absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/20 to-white/40 pointer-events-none;
+}
+
+.orbPulse {
+  @apply absolute inset-0 rounded-full bg-white/10 animate-pulse pointer-events-none;
+}
+
+/* 监听时的旋转光环 */
+.listeningRing {
+  @apply absolute w-40 h-40 rounded-full border-2 border-blue-300/30 animate-[spin_3s_linear_infinite] pointer-events-none;
+}
+
+/* 思考时的加载动画 */
+.processingRing {
+  @apply absolute w-36 h-36 rounded-full border-2 border-transparent border-t-white/60 animate-spin pointer-events-none;
+}
+
+.controls {
+  @apply absolute bottom-12 left-0 right-0 flex justify-center items-center gap-8 z-20;
+}
+
+.controlButton {
+  @apply p-4 rounded-full bg-white/80 backdrop-blur-sm shadow-lg text-blue-600 transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95;
+}
+
+.mainButton {
+  @apply p-6 rounded-full bg-white shadow-xl text-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-2xl hover:shadow-blue-200;
+
+  &.active {
+    @apply bg-red-50 text-red-500 shadow-red-100;
+  }
+}
+
+.tips {
+  @apply absolute bottom-32 text-blue-400/60 text-sm font-medium animate-pulse;
+}
