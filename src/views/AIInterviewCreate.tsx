@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const AIInterviewCreate: React.FC = () => {
   const [domain, setDomain] = useState<string | null>(null);
@@ -388,7 +388,7 @@ const AIInterviewCreate: React.FC = () => {
                     >
                       <path d="M3 10a1 1 0 011-1h8.586l-3.293-3.293a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L12.586 11H4a1 1 0 01-1-1z" />
                     </svg>
-                    <span>开始面试</span>
+                    <Link to={`/ai-interview`}>开始面试</Link>
                   </>
                 )}
               </button>
