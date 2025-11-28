@@ -1,41 +1,61 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { message } from 'antd';
 
 const AIInterviewCreate: React.FC = () => {
   const [domain, setDomain] = useState<string | null>(null);
   const [style, setStyle] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const canStart = Boolean(domain && style);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!domain || !style) {
-      window.alert('请选择面试领域和面试风格');
+      message.error('请选择面试领域和面试风格');
       return;
     }
+
     setLoading(true);
-    (async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const resp = await axios.post(
-          'http://localhost:8085/api/interview/create_interview',
-          { domain, style },
-          { headers: { Authorization: token || '' } }
-        );
-        if (resp.data && resp.data.code === '0000') {
-          const id = resp.data.data;
-          // 跳转到语音面试页面
-          window.location.href = `/ai-interview/${id}`;
-        } else {
-          window.alert('创建面试失败：' + (resp.data?.info || JSON.stringify(resp.data)));
-        }
-      } catch (err) {
-        console.error(err);
-        window.alert('创建面试请求失败');
-      } finally {
-        setLoading(false);
+    try {
+      const token = localStorage.getItem('token');
+      const resp = await axios.post(
+        '/api/interview/create_interview',
+        { domain, style },
+        { headers: { Authorization: token || '' } },
+      );
+
+      if (resp.data && resp.data.code === '0000') {
+        const interview_id = String(resp.data.data);
+        // 成功：跳转到语音面试页面
+        navigate(`/ai-interview/${interview_id}`);
+      } else {
+        // 使用 antd message 弹窗，显示标题与后端返回信息
+        message.error({
+          content: (
+            <div>
+              <div style={{ fontWeight: 700 }}>面试创建失败</div>
+              <div>{resp.data?.info}</div>
+            </div>
+          ),
+        });
       }
-    })();
+    } catch (err) {
+      console.error(err);
+      message.error({
+        content: (
+          <div>
+            <div style={{ fontWeight: 700 }}>面试创建失败</div>
+            <div>网络请求失败，请稍后重试</div>
+          </div>
+        ),
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,12 +90,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="domain"
-                    value="frontend"
+                    value="前端"
                     className="sr-only peer"
-                    checked={domain === 'frontend'}
-                    onChange={() => setDomain('frontend')}
+                    checked={domain === '前端'}
+                    onChange={() => setDomain('前端')}
+                    disabled={domain !== null && domain !== '前端'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '前端' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -88,8 +109,8 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">前端开发</h4>
-                        <p className="text-sm text-gray-600">React、Vue、JavaScript等</p>
+                        <h4 className="font-semibold text-gray-900 mb-2">前端</h4>
+                        <p className="text-sm text-gray-600">React、Vue、JavaScript 等</p>
                       </div>
                     </div>
                   </div>
@@ -99,12 +120,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="domain"
-                    value="backend"
+                    value="后端"
                     className="sr-only peer"
-                    checked={domain === 'backend'}
-                    onChange={() => setDomain('backend')}
+                    checked={domain === '后端'}
+                    onChange={() => setDomain('后端')}
+                    disabled={domain !== null && domain !== '后端'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '后端' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -117,8 +139,8 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">后端开发</h4>
-                        <p className="text-sm text-gray-600">Java、Python、Node.js等</p>
+                        <h4 className="font-semibold text-gray-900 mb-2">后端</h4>
+                        <p className="text-sm text-gray-600">Java、Python、Node.js 等</p>
                       </div>
                     </div>
                   </div>
@@ -128,12 +150,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="domain"
-                    value="algorithm"
+                    value="算法"
                     className="sr-only peer"
-                    checked={domain === 'algorithm'}
-                    onChange={() => setDomain('algorithm')}
+                    checked={domain === '算法'}
+                    onChange={() => setDomain('算法')}
+                    disabled={domain !== null && domain !== '算法'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '算法' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -146,7 +169,7 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">算法与数据结构</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">算法</h4>
                         <p className="text-sm text-gray-600">编程基础与逻辑思维</p>
                       </div>
                     </div>
@@ -157,12 +180,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="domain"
-                    value="system"
+                    value="嵌入式"
                     className="sr-only peer"
-                    checked={domain === 'system'}
-                    onChange={() => setDomain('system')}
+                    checked={domain === '嵌入式'}
+                    onChange={() => setDomain('嵌入式')}
+                    disabled={domain !== null && domain !== '嵌入式'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '嵌入式' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -175,8 +199,8 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">系统设计</h4>
-                        <p className="text-sm text-gray-600">架构设计与系统思维</p>
+                        <h4 className="font-semibold text-gray-900 mb-2">嵌入式</h4>
+                        <p className="text-sm text-gray-600">C/C++、驱动、操作系统等</p>
                       </div>
                     </div>
                   </div>
@@ -186,12 +210,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="domain"
-                    value="mobile"
+                    value="移动开发"
                     className="sr-only peer"
-                    checked={domain === 'mobile'}
-                    onChange={() => setDomain('mobile')}
+                    checked={domain === '移动开发'}
+                    onChange={() => setDomain('移动开发')}
+                    disabled={domain !== null && domain !== '移动开发'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md max-w-md mx-auto">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md max-w-md mx-auto ${domain !== null && domain !== '移动开发' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -204,8 +229,8 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">移动端开发</h4>
-                        <p className="text-sm text-gray-600">iOS、Android、Flutter等</p>
+                        <h4 className="font-semibold text-gray-900 mb-2">移动开发</h4>
+                        <p className="text-sm text-gray-600">iOS、Android、Flutter 等</p>
                       </div>
                     </div>
                   </div>
@@ -234,12 +259,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="style"
-                    value="friendly"
+                    value="友好面"
                     className="sr-only peer"
-                    checked={style === 'friendly'}
-                    onChange={() => setStyle('friendly')}
+                    checked={style === '友好面'}
+                    onChange={() => setStyle('友好面')}
+                    disabled={style !== null && style !== '友好面'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '友好面' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -252,7 +278,7 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">友好交流型</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">友好面</h4>
                         <p className="text-sm text-gray-600">轻松愉快的对话氛围</p>
                       </div>
                     </div>
@@ -263,12 +289,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="style"
-                    value="professional"
+                    value="专业面"
                     className="sr-only peer"
-                    checked={style === 'professional'}
-                    onChange={() => setStyle('professional')}
+                    checked={style === '专业面'}
+                    onChange={() => setStyle('专业面')}
+                    disabled={style !== null && style !== '专业面'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '专业面' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -281,7 +308,7 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">专业严谨型</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">专业面</h4>
                         <p className="text-sm text-gray-600">正式的面试风格</p>
                       </div>
                     </div>
@@ -292,12 +319,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="style"
-                    value="pressure"
+                    value="压力面"
                     className="sr-only peer"
-                    checked={style === 'pressure'}
-                    onChange={() => setStyle('pressure')}
+                    checked={style === '压力面'}
+                    onChange={() => setStyle('压力面')}
+                    disabled={style !== null && style !== '压力面'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '压力面' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -310,7 +338,7 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">压力测试型</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">压力面</h4>
                         <p className="text-sm text-gray-600">有一定挑战性</p>
                       </div>
                     </div>
@@ -321,12 +349,13 @@ const AIInterviewCreate: React.FC = () => {
                   <input
                     type="radio"
                     name="style"
-                    value="guided"
+                    value="引导面"
                     className="sr-only peer"
-                    checked={style === 'guided'}
-                    onChange={() => setStyle('guided')}
+                    checked={style === '引导面'}
+                    onChange={() => setStyle('引导面')}
+                    disabled={style !== null && style !== '引导面'}
                   />
-                  <div className="border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md">
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '引导面' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -339,7 +368,7 @@ const AIInterviewCreate: React.FC = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">引导启发型</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">引导面</h4>
                         <p className="text-sm text-gray-600">循序渐进的提问</p>
                       </div>
                     </div>
@@ -351,8 +380,8 @@ const AIInterviewCreate: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
               <button
                 type="submit"
-                disabled={loading}
-                className={`${loading ? 'opacity-70 cursor-not-allowed' : ''} bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2`}
+                disabled={!canStart || loading}
+                className={`${!canStart || loading ? 'opacity-70 cursor-not-allowed bg-gray-400 hover:bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform ${!canStart || loading ? '' : 'hover:scale-105'} shadow-lg hover:shadow-xl flex items-center justify-center space-x-2`}
               >
                 {loading ? (
                   <>
@@ -388,7 +417,7 @@ const AIInterviewCreate: React.FC = () => {
                     >
                       <path d="M3 10a1 1 0 011-1h8.586l-3.293-3.293a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L12.586 11H4a1 1 0 01-1-1z" />
                     </svg>
-                    <Link to={`/ai-interview`}>开始面试</Link>
+                    <span>开始面试</span>
                   </>
                 )}
               </button>

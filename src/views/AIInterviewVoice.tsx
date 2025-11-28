@@ -64,6 +64,20 @@ const AIInterviewVoice: React.FC = () => {
             sourceRef.current.disconnect();
             sourceRef.current = null;
           }
+          // 如果收到的是文本消息，检查是否为 Token 异常，若是则跳转登录
+          if (typeof ev.data === 'string') {
+            try {
+              const obj = JSON.parse(ev.data);
+              const info = obj?.info || obj?.message || obj?.error;
+              if (info === 'Token 异常') {
+                console.warn('[AIInterviewVoice] token invalid, redirect to login');
+                navigate('/login');
+                return;
+              }
+            } catch (e) {
+              // 非 JSON 文本或其他文本，忽略
+            }
+          }
 
           const source = audioCtx.createBufferSource();
           source.buffer = audioBuffer;

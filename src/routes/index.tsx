@@ -13,6 +13,7 @@ import LikeHistory from '../views/LikeHistory';
 import AccountSettings from '../views/AccountSettings';
 import { PersonalInfoContent } from '../views/PersonalInfo';
 import AIInterview from '../views/AIInterview';
+import AIInterviewVoice from '../views/AIInterviewVoice';
 
 // 路由表项接口
 export interface RouteItem {
@@ -75,7 +76,7 @@ export const routes: RouteItem[] = [
   },
   {
     name: 'AI面试',
-    path: 'ai-interview',
+    path: 'ai-interview/:id',
     element: <AIInterview />,
   },
   {
