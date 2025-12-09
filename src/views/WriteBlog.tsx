@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { message } from 'antd';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Select } from 'antd';
 import {
-  UserOutlined,
-  FileTextOutlined,
-  HeartOutlined,
-  EditOutlined,
-  SettingOutlined,
   InfoCircleOutlined,
   BoldOutlined,
   ItalicOutlined,
@@ -42,6 +40,70 @@ function hello() {
 
 > 这是一个引用块
 `);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  // check query param postId
+  const params = new URLSearchParams(location.search);
+  const postId = params.get('postId');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchPost = async (id: string) => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`/api/posts/info/${id}`);
+        const data = res?.data?.data || res?.data;
+        if (data) {
+          setTitle(data.title || '');
+          setMarkdown(data.content || '');
+          // tags available in data.tags
+          // category/summary not provided by detail endpoint; keep existing
+        }
+      } catch (e) {
+        console.error('fetch post detail failed', e);
+        message.error('加载文章失败');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (postId) fetchPost(postId);
+  }, [postId]);
+
+  const handlePublish = async () => {
+    try {
+      setLoading(true);
+      const payload: any = {
+        title: title,
+        content: markdown,
+        summary: undefined,
+        category: category,
+        tags: undefined,
+        status: 1,
+      };
+      if (postId) {
+        // update
+        await axios.put(`/api/posts/${postId}`, payload);
+        message.success('更新成功');
+        navigate(`/blog-detail/${postId}`);
+      } else {
+        // create
+        const res = await axios.post('/api/posts', payload);
+        const id = res?.data?.data ?? res?.data;
+        message.success('发布成功');
+        if (id !== undefined && id !== null) {
+          navigate(`/blog-detail/${String(id)}`);
+        } else {
+          navigate('/blog-home');
+        }
+      }
+    } catch (e) {
+      console.error('publish failed', e);
+      message.error('发布失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 text-black">
@@ -250,12 +312,36 @@ function hello() {
                 自动保存于 2分钟前
               </div>
               <div className="flex items-center space-x-4">
-                <button className="px-6 py-3 border border-gray-300 text-black rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                <button
+                  className="px-6 py-3 border border-gray-300 text-black rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  onClick={async () => {
+                    try {
+                      setLoading(true);
+                      const payload: any = { title, content: markdown, category, status: 0 };
+                      if (postId) {
+                        await axios.put(`/api/posts/${postId}`, payload);
+                        message.success('保存草稿成功');
+                      } else {
+                        await axios.post('/api/posts', payload);
+                        message.success('保存草稿成功');
+                      }
+                    } catch (e) {
+                      console.error('save draft failed', e);
+                      message.error('保存草稿失败');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
                   保存草稿
                 </button>
-                <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center">
+                <button
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center"
+                  onClick={handlePublish}
+                  disabled={loading}
+                >
                   <SendOutlined className="mr-2" />
-                  发布博客
+                  {postId ? '更新并发布' : '发布博客'}
                 </button>
               </div>
             </div>

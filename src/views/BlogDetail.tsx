@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const BlogDetail: React.FC = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [post, setPost] = useState<{
@@ -19,13 +22,16 @@ const BlogDetail: React.FC = () => {
     like_count?: number;
     is_liked?: boolean;
   }>({});
+  const [likeCount, setLikeCount] = useState<number | null>(null);
+  const [isLiked, setIsLiked] = useState<boolean>(false);
+  const [isLiking, setIsLiking] = useState<boolean>(false);
 
   useEffect(() => {
     if (!id) return;
     const fetch = async () => {
       setLoading(true);
       try {
-        const resp = await axios.get(`http://localhost:8085/api/posts/${id}`);
+        const resp = await axios.get(`/api/posts/info/${id}`);
         console.log('GET /api/posts/:id response', resp?.data);
         if (resp.data && resp.data.code === '0000') {
           console.log('post data', resp.data.data);
@@ -42,6 +48,47 @@ const BlogDetail: React.FC = () => {
     };
     fetch();
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchInteraction = async () => {
+      try {
+        const resp = await axios.get(`/api/posts/interaction/${id}`);
+        console.log('GET /api/posts/interaction/:id response', resp?.data);
+            if (resp.data && resp.data.code === '0000') {
+              const data = resp.data.data || {};
+              setLikeCount(typeof data.like_count !== 'undefined' && data.like_count !== null ? Number(data.like_count) : null);
+              setIsLiked(Boolean(data.is_liked));
+            }
+      } catch (err) {
+        console.error('fetch interaction failed', err);
+      }
+    };
+
+    fetchInteraction();
+  }, [id]);
+
+  const handleToggleLike = async () => {
+    if (!id || isLiking) return;
+    setIsLiking(true);
+    try {
+      const resp = await axios.post(`/api/posts/${id}/like`);
+      console.log('POST /api/posts/:id/like response', resp?.data);
+      if (resp.data && resp.data.code === '0000') {
+        const data = resp.data.data || {};
+        const action = data.action;
+        const newCount = typeof data.new_like_count !== 'undefined' && data.new_like_count !== null ? Number(data.new_like_count) : null;
+        setIsLiked(action === 'liked');
+        setLikeCount(newCount);
+      } else {
+        console.error('like action error', resp.data);
+      }
+    } catch (err) {
+      console.error('like request failed', err);
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   console.log('post',post);
   
@@ -73,18 +120,53 @@ const BlogDetail: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-6 text-sm text-gray-500">
                   <div className="flex items-center space-x-1">
-                    <i className="fas fa-heart text-red-500"></i>
-                    <span>{post.like_count || 0}</span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleToggleLike();
+                      }}
+                      disabled={isLiking}
+                      aria-pressed={isLiked}
+                      className="focus:outline-none"
+                    >
+                      <i className={`fas fa-heart ${isLiked ? 'text-red-500' : 'text-gray-400'}`} />
+                    </button>
+                    <span>{likeCount ?? post.like_count ?? 0}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-              <div
-                className="prose prose-lg max-w-none text-gray-800 break-words"
-                dangerouslySetInnerHTML={{ __html: post.content || '' }}
-              />
+              {post.content ? (
+                <div className="prose prose-lg max-w-none text-gray-800 break-words">
+                  <ReactMarkdown
+                    components={{
+                      code({ node, inline, className, children, ...props }: any) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={vscDarkPlus}
+                            language={match[1]}
+                            PreTag="div"
+                            {...props}
+                          >
+                            {String(children).replace(/\n$/, '')}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  >
+                    {post.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <div className="prose prose-lg max-w-none text-gray-800 break-words" dangerouslySetInnerHTML={{ __html: post.content || '' }} />
+              )}
             </div>
           </div>
 

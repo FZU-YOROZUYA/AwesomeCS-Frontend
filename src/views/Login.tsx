@@ -19,7 +19,7 @@ const Login: React.FC = () => {
       <div className="w-full p-8 max-w-6xl flex bg-white rounded-2xl overflow-hidden">
         {/* 左侧介绍区域 */}
         <div className="hidden lg:flex lg:w-1/2  p-12 flex-col justify-center">
-          <h1 className="text-4xl font-bold text-blue-600 mb-6">awesomeCS</h1>
+          <h1 className="text-4xl font-bold text-blue-600 mb-6">AwesomeCS</h1>
           <p className="text-gray-600 text-base mb-8">
             专注技术学习与专家咨询的平台，登录以继续，或注册加入新账号开始使用。
           </p>

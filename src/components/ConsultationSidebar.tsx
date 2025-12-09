@@ -1,57 +1,49 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import type { ConsultationResponse, ConsultationRelationResponse } from '../types';
+import type { ConsultationResponse } from '../types';
 import { useConsultation } from '../contexts/ConsultationContext';
-import { expertIdToName } from '../mock/mockConsultation';
 
 const { Sider } = Layout;
 
 interface ConsultationSidebarProps {
   /** 咨询列表 */
   consultations: ConsultationResponse[];
-  /** 专家关系列表（用于获取专家信息） */
-  expertRelations: ConsultationRelationResponse[];
 }
 
 /**
  * 咨询聊天侧边栏组件
  * 显示咨询列表，支持切换不同专家的对话
  */
-const ConsultationSidebar: React.FC<ConsultationSidebarProps> = ({
-  consultations,
-  expertRelations,
-}) => {
-  const { selectedExpert, setSelectedExpert } = useConsultation();
+const ConsultationSidebar: React.FC<ConsultationSidebarProps> = ({ consultations }) => {
+  const { selectedConsultation, setSelectedConsultation } = useConsultation();
 
   // 根据咨询列表和专家关系生成菜单项
   const menuItems = consultations.map((consultation) => {
-    const expert = expertRelations.find((rel) => rel.user_id === consultation.expert_id);
-    const expertName = expert
-      ? expertIdToName[consultation.expert_id] || `专家${consultation.expert_id}`
-      : `专家${consultation.expert_id}`;
-
+    // 动态显示对方信息
+    const isExpert = consultation.is_expert;
+    const baseName = isExpert
+      ? consultation.seeker_name || `用户${consultation.seeker_id}`
+      : consultation.expert_name || `专家${consultation.expert_id}`;
+    const roleSuffix = isExpert ? '【用户】' : '【专家】';
+    const otherName = `${baseName}${roleSuffix}`;
+    const otherAvatar = isExpert ? consultation.seeker_avatar : consultation.expert_avatar;
     return {
-      key: consultation.id.toString(),
+      key: consultation.consultation_id.toString(),
       label: (
         <div className="flex items-center space-x-3">
-          <div className="relative">
-            <img
-              src={
-                expert?.avatar_url ||
-                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face'
-              }
-              alt="专家头像"
-              className="w-10 h-10 rounded-full"
-            />
-            <div
-              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-white rounded-full ${
-                consultation.status === 1 ? 'bg-green-500' : 'bg-gray-400'
-              }`}
-            ></div>
-          </div>
+          <img
+            src={
+              otherAvatar ||
+              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face'
+            }
+            alt="对方头像"
+            className="w-10 h-10 rounded-full"
+          />
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-900 truncate">{expertName}</h3>
+              <h3 className="text-sm font-medium text-gray-900 truncate">
+                {otherName}
+              </h3>
               <span className="text-xs text-gray-500">
                 {new Date(consultation.created_at).toLocaleTimeString('zh-CN', {
                   hour: '2-digit',
@@ -73,26 +65,18 @@ const ConsultationSidebar: React.FC<ConsultationSidebarProps> = ({
   });
 
   const handleMenuClick = ({ key }: { key: string }) => {
-    const consultationId = parseInt(key, 10);
-    const consultation = consultations.find((c) => c.id === consultationId);
+    const consultation = consultations.find((c) => c.consultation_id === key);
     if (consultation) {
-      const expert = expertRelations.find((rel) => rel.user_id === consultation.expert_id);
-      if (expert) {
-        setSelectedExpert(expert);
-      }
+      setSelectedConsultation(consultation);
     }
   };
 
   // 默认选择第一个咨询对应的专家
   React.useEffect(() => {
-    if (!selectedExpert && consultations.length > 0 && expertRelations.length > 0) {
-      const firstConsultation = consultations[0];
-      const expert = expertRelations.find((rel) => rel.user_id === firstConsultation.expert_id);
-      if (expert) {
-        setSelectedExpert(expert);
-      }
+    if (!selectedConsultation && consultations.length > 0) {
+      setSelectedConsultation(consultations[0]);
     }
-  }, [selectedExpert, consultations, expertRelations, setSelectedExpert]);
+  }, [selectedConsultation, consultations, setSelectedConsultation]);
 
   return (
     <Sider
@@ -117,15 +101,7 @@ const ConsultationSidebar: React.FC<ConsultationSidebarProps> = ({
         <Menu
           theme="light"
           mode="inline"
-          selectedKeys={
-            selectedExpert
-              ? [
-                  consultations
-                    .find((c) => c.expert_id === selectedExpert.user_id)
-                    ?.id.toString() || '',
-                ]
-              : []
-          }
+          selectedKeys={selectedConsultation ? [selectedConsultation.consultation_id] : []}
           onClick={handleMenuClick}
           className="border-none bg-white"
           style={{ backgroundColor: 'white' }}

@@ -1,21 +1,27 @@
 /**
- * 咨询响应
+ * 咨询响应（/api/consultations/me）
  */
 export interface ConsultationResponse {
   /** 咨询ID */
-  id: number;
+  consultation_id: string;
   /** 专家ID */
-  expert_id: number;
+  expert_id: string;
   /** 咨询者ID */
-  seeker_id: number;
-  /** 咨询价格 */
-  price: number;
+  seeker_id: string;
+  /** 我是否是专家角色 */
+  is_expert?: boolean | number;
   /** 状态：0-待支付，1-已预约，2-已完成，3-已取消 */
-  status: 0 | 1 | 2 | 3;
-  /** 预约时间 */
-  scheduled_time: string;
+  status: number;
   /** 创建时间 */
   created_at: string;
+  /** 专家名称 */
+  expert_name: string;
+  /** 专家头像 */
+  expert_avatar: string;
+  /** 咨询者名称 */
+  seeker_name: string;
+  /** 咨询者头像 */
+  seeker_avatar: string;
 }
 
 /**
@@ -23,11 +29,11 @@ export interface ConsultationResponse {
  */
 export interface ConsultationMessageResponse {
   /** 消息ID */
-  id: number;
+  msg_id: string;
   /** 咨询ID */
-  consultation_id: number;
+  consultation_id: string;
   /** 发送者ID */
-  sender_id: number;
+  sender_id: string;
   /** 消息内容 */
   content: string;
   /** 消息类型 */

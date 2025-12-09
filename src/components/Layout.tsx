@@ -19,7 +19,7 @@ const ACLayout: React.FC = () => {
                 <i className="fas fa-code text-white text-sm"></i>
               </div> */}
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              awesomeCS
+              AwesomeCS
             </span>
             {/* </div> */}
 

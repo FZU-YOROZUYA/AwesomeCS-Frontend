@@ -1,4 +1,7 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useNavigate } from 'react-router-dom';
 import type { BlogItem } from '../types';
 
@@ -115,7 +118,26 @@ const BlogCard: React.FC<BlogCardProps> = ({
           {category}
         </span>
       </div>
-      <p className="text-gray-600 mb-4 line-clamp-2">{content}</p>
+      <div className="text-gray-600 mb-4 line-clamp-2 prose-sm max-w-none">
+        <ReactMarkdown
+          components={{
+            code({ node, inline, className, children, ...props }: any) {
+              const match = /language-(\w+)/.exec(className || '');
+              return !inline && match ? (
+                <SyntaxHighlighter style={vscDarkPlus} language={match[1]} PreTag="div" {...props}>
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              ) : (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {content || ''}
+        </ReactMarkdown>
+      </div>
       <div className="flex items-center space-x-6 text-sm text-gray-500">
         <span className="flex items-center">
           <i className="far fa-thumbs-up mr-1"></i> {likeCount}

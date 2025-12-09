@@ -212,12 +212,8 @@ const VoiceChat = (param: { id?: string }) => {
       {/* 提示文本 */}
       {mode === 'idle' && <div className={styles.tips}>Tap to speak</div>}
 
-      {/* 底部控制栏 */}
+      {/* 底部控制栏：仅保留主控制按钮（移除左右辅助按钮） */}
       <div className={styles.controls}>
-        <button className={styles.controlButton}>
-          <i className="fas fa-keyboard text-xl"></i>
-        </button>
-
         {/* 主控制按钮 */}
         <button
           onClick={handleToggle}
@@ -228,10 +224,6 @@ const VoiceChat = (param: { id?: string }) => {
           ) : (
             <i className="fas fa-microphone text-2xl"></i>
           )}
-        </button>
-
-        <button className={styles.controlButton}>
-          <i className="fas fa-headphones text-xl"></i>
         </button>
       </div>
     </div>

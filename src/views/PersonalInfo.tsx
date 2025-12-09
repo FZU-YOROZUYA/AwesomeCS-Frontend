@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   UserOutlined,
@@ -7,8 +8,6 @@ import {
   EditOutlined,
   SettingOutlined,
   CameraOutlined,
-  MailOutlined,
-  MobileOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -71,12 +70,11 @@ const PersonalInfo: React.FC = () => {
  */
 export const PersonalInfoContent: React.FC = () => {
   // form state
-  const [avatarPreview, setAvatarPreview] = useState<string>('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face');
+  const defaultAvatar = '/default-avatar.png';
+  const [avatarPreview, setAvatarPreview] = useState<string>(defaultAvatar);
   const [username, setUsername] = useState<string>('张三');
-  const [email, setEmail] = useState<string>('zhangsan@example.com');
-  const [phone, setPhone] = useState<string>('138****5678');
   const [bio, setBio] = useState<string>('');
-  const [techs, setTechs] = useState<string>(''); // comma separated
+  const [techs, setTechs] = useState<string[]>([]); // string list
   const [targetJob, setTargetJob] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -99,16 +97,9 @@ export const PersonalInfoContent: React.FC = () => {
         await axios.post('/api/user/avatar/update', { avatar: avatarPreview });
       }
 
-      // 2) profile update: bio, techs(array), targetJob
-      const techsArr = techs
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
-
+      // 2) profile update: 仅发送 bio 字段，后端允许接收部分字段
       await axios.post('/api/user/profile/update', {
         bio: bio,
-        techs: techsArr,
-        targetJob: targetJob,
       });
 
       alert('保存成功');
@@ -117,6 +108,53 @@ export const PersonalInfoContent: React.FC = () => {
       alert('保存失败');
     }
   };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get('/api/user/profile');
+        // 后端返回 Result<UserProfileResponse>
+        if (res?.data?.code === '0000') {
+          const d = res.data.data || res.data;
+          if (d) {
+            setUsername(d.nickname || username);
+            if (d.avatar) {
+              let avatarUrl = d.avatar as string;
+              // 如果不是完整 URL（http/https/data:），用后端 baseURL 作为前缀；若没有 baseURL 则补一个 / 变成绝对路径
+              if (!/^https?:\/\//i.test(avatarUrl) && !avatarUrl.startsWith('data:')) {
+                const base = (axios.defaults.baseURL || '').replace(/\/$/, '');
+                if (base) {
+                  avatarUrl = base + (avatarUrl.startsWith('/') ? '' : '/') + avatarUrl;
+                } else {
+                  avatarUrl = avatarUrl.startsWith('/') ? avatarUrl : `/${avatarUrl}`;
+                }
+              }
+              setAvatarPreview(avatarUrl);
+            } else {
+              setAvatarPreview(defaultAvatar);
+            }
+            setBio(d.bio || '');
+            setTargetJob(d.targetJob || '');
+            if (Array.isArray(d.techs)) {
+              setTechs(d.techs as string[]);
+            } else if (d.techs) {
+              // 如果后端以字符串返回，也尝试解析
+              try {
+                const parsed = JSON.parse(d.techs);
+                if (Array.isArray(parsed)) setTechs(parsed.map(String));
+                else setTechs(String(d.techs).split(',').map((s: string) => s.trim()).filter(Boolean));
+              } catch (e) {
+                setTechs(String(d.techs).split(',').map((s: string) => s.trim()).filter(Boolean));
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('fetch profile failed', err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -134,11 +172,15 @@ export const PersonalInfoContent: React.FC = () => {
                 <img
                   src={avatarPreview}
                   alt="头像预览"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                  onError={() => {
+                    if (avatarPreview !== defaultAvatar) setAvatarPreview(defaultAvatar);
+                  }}
+                  referrerPolicy="no-referrer"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 bg-gray-100"
                 />
                 <label
                   htmlFor="avatarInput"
-                  className="absolute inset-0 w-24 h-24 rounded-full bg-black bg-opacity-0 hover:bg-opacity-40 flex items-center justify-center cursor-pointer transition-all group"
+                  className="absolute inset-0 w-24 h-24 rounded-full bg-transparent hover:bg-black hover:bg-opacity-40 flex items-center justify-center cursor-pointer transition-all group"
                 >
                   <CameraOutlined className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </label>
@@ -166,41 +208,6 @@ export const PersonalInfoContent: React.FC = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">
-              绑定邮箱 <span className="text-gray-400 text-xs font-normal">(选填)</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <MailOutlined className="text-gray-400" />
-              </div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
-                placeholder="请输入邮箱地址"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">
-              绑定手机 <span className="text-gray-400 text-xs font-normal">(选填)</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <MobileOutlined className="text-gray-400" />
-              </div>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
-                placeholder="请输入手机号码"
-              />
-            </div>
-          </div>
 
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-3">
@@ -214,6 +221,30 @@ export const PersonalInfoContent: React.FC = () => {
               placeholder="介绍一下自己吧..."
             />
             <p className="text-xs text-gray-500 mt-2">最多可输入 200 个字符</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">目标岗位 <span className="text-gray-400 text-xs font-normal">(选填)</span></label>
+            <input
+              type="text"
+              value={targetJob}
+              onChange={(e) => setTargetJob(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+              placeholder="例如：后端开发工程师"
+            />
+            <p className="text-xs text-gray-500 mt-2">填写您的目标岗位</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">技术栈 <span className="text-gray-400 text-xs font-normal">(选填)</span></label>
+            <input
+              type="text"
+              value={techs.join(', ')}
+              onChange={(e) => setTechs(e.target.value.split(',').map((s) => s.trim()).filter((s) => s.length > 0))}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+              placeholder="多个技术请用逗号分隔，例如：Java, Spring, MySQL"
+            />
+            <p className="text-xs text-gray-500 mt-2">技术栈将作为字符串列表处理</p>
           </div>
 
           <div className="flex items-center space-x-4 pt-6 border-t border-gray-200">

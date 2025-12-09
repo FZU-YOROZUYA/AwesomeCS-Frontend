@@ -1,6 +1,6 @@
 import React from 'react';
+import axios from 'axios';
 import { StarFilled } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 
 interface ExpertCardProps {
   /** 专家头像URL */
@@ -19,6 +19,8 @@ interface ExpertCardProps {
   consultationCount?: number;
   /** 专家标签 */
   tags?: string[];
+  /** 咨询关系ID */
+  relationId?: string;
 }
 
 /**
@@ -34,8 +36,8 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
   rating = 5,
   consultationCount,
   tags,
+  relationId,
 }) => {
-  const navigate = useNavigate();
   // 渲染评分星星
   const renderRating = () => {
     const stars = [];
@@ -49,6 +51,39 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       );
     }
     return <div className="flex items-center">{stars}</div>;
+  };
+
+  const handleConsult = async () => {
+    if (!relationId) {
+      alert('缺少咨询关系ID，无法发起咨询');
+      return;
+    }
+
+    try {
+      // 1. 预约接口
+      const bookRes = await axios.post('/api/consultations/book', null, {
+        params: { relation_id: relationId },
+      });
+      const bookData = bookRes?.data || {};
+      if (bookData.code === '0020' && bookData.info === '已有此咨询') {
+        window.location.href = '/consultation-chat';
+        return;
+      }
+      const consultationId = bookData.data?.id ?? bookData.data;
+      if (!consultationId) {
+        alert('预约失败，未获取到咨询ID');
+        return;
+      }
+      // 2. 支付回调
+      await axios.post(`/api/consultations/${consultationId}/pay-callback`, null, {
+        params: { transaction_id: 1 },
+      });
+      // 3. 跳转
+      window.location.href = '/consultation-chat';
+    } catch (err) {
+      alert('操作失败，请稍后重试');
+      console.error(err);
+    }
   };
 
   return (
@@ -98,7 +133,7 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
       )}
 
       <button
-        onClick={() => navigate('/consultation-chat')}
+        onClick={handleConsult}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
       >
         立即咨询
