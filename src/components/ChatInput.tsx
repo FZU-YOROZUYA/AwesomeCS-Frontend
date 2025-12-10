@@ -38,27 +38,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }) => {
       style={{ backgroundColor: 'white', flexShrink: 0 }}
     >
       <div className="flex items-end space-x-3">
-        <div className="flex space-x-2">
-          <button
-            className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-            disabled={disabled}
-          >
-            <SmileOutlined className="text-gray-500" />
-          </button>
-          <button
-            className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-            disabled={disabled}
-          >
-            <PaperClipOutlined className="text-gray-500" />
-          </button>
-          <button
-            className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-            disabled={disabled}
-          >
-            <PictureOutlined className="text-gray-500" />
-          </button>
-        </div>
-
         <div className="flex-1 relative">
           <textarea
             placeholder="输入消息..."

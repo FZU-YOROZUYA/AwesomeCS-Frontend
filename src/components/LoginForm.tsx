@@ -1,26 +1,53 @@
 import React, { useState } from 'react';
-import { Input, Checkbox, Button } from 'antd';
+import { Input, Checkbox, Button, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('登录:', { email, password, rememberMe });
+    try {
+      const response = await axios.post('http://localhost:8085/api/user/login/username', null, {
+        params: {
+          username,
+          password
+        }
+      });
+      
+      if (response.data.code === '0000') {
+        message.success('登录成功');
+        const token = response.data.data?.token || response.data.data;
+        localStorage.setItem('token', token);
+        // set axios default header for subsequent requests
+        axios.defaults.headers.common['Authorization'] = token;
+        if (rememberMe) {
+          localStorage.setItem('username', username);
+        }
+        // Navigate to dashboard or home
+        navigate('/'); 
+      } else {
+        message.error(response.data.info || '登录失败');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      message.error('登录请求失败');
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">邮箱</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">用户名</label>
         <Input
-          type="email"
-          placeholder="请输入邮箱"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="请输入用户名"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           size="large"
           required
         />

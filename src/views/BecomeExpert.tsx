@@ -1,28 +1,104 @@
-import React, { useState } from 'react';
-import { Button, Input, Select, Upload, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Input, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const { TextArea } = Input;
-const { Option } = Select;
 
 const BecomeExpert: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
-    expertise: '',
-    experience: '',
-    hourlyRate: '',
+    price: '',
     introduction: '',
-    certifications: [],
   });
+  const [consultationRelationsId, setConsultationRelationsId] = useState<string | null>(null);
+  const [isExpert, setIsExpert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
 
-  const handleSubmit = () => {
-    // 验证表单
-    if (!formData.name || !formData.expertise || !formData.hourlyRate) {
+  const fetchBeen = useCallback(async () => {
+    try {
+      const res = await axios.get('/api/consultation-relations/been');
+      const id = res?.data?.data ?? res?.data;
+      if (id !== undefined && id !== null) {
+        const strId = String(id);
+        setConsultationRelationsId(strId);
+        setIsExpert(strId !== '-1' && strId !== '');
+      }
+    } catch (err) {
+      console.error('fetch consultation-relations/been error', err);
+    }
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!formData.price || !formData.introduction) {
       message.error('请填写必填项');
       return;
     }
-    message.success('申请已提交，我们会尽快审核');
+    setIsLoading(true);
+    try {
+      const payload = {
+        price: formData.price,
+        info: formData.introduction,
+      };
+
+      let res;
+      if (!isExpert || !consultationRelationsId || consultationRelationsId === '-1') {
+        res = await axios.post('/api/consultation-relations', payload);
+      } else {
+        res = await axios.put(`/api/consultation-relations/${consultationRelationsId}`, payload);
+      }
+
+      // 如果返回新的 id，保存起来（状态仍以 /been 接口为准）
+      const newId = res?.data?.data || res?.data?.id;
+      if (newId) setConsultationRelationsId(String(newId));
+
+      // 重新拉取是否已是专家的状态
+      await fetchBeen();
+
+      message.success('申请已提交，我们会尽快审核');
+      navigate('/expert-list');
+    } catch (err: any) {
+      console.error(err);
+      const msg = err?.response?.data?.message || err?.message || '提交失败';
+      message.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchBeen();
+  }, [fetchBeen]);
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      // 只有已是专家且拿到有效 id 时才拉取详情
+      if (!isExpert) return;
+      if (!consultationRelationsId || consultationRelationsId === '-1') return;
+      setIsFetchingDetail(true);
+      try {
+        const res = await axios.get(`/api/consultation-relations/${consultationRelationsId}`);
+        const data = res?.data?.data ?? res?.data;
+        if (data) {
+          setFormData({
+            price: data.price ?? '',
+            introduction: data.info ?? '',
+          });
+          // 若接口返回 id 也同步存储
+          if (data.consultation_relations_id) {
+            setConsultationRelationsId(String(data.consultation_relations_id));
+          }
+        }
+      } catch (err) {
+        console.error('fetch consultation-relations detail error', err);
+      } finally {
+        setIsFetchingDetail(false);
+      }
+    };
+
+    fetchDetail();
+  }, [isExpert, consultationRelationsId]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -36,99 +112,33 @@ const BecomeExpert: React.FC = () => {
         {/* 表单卡片 */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <div className="space-y-6">
-            {/* 基本信息 */}
+            {/* 价格与介绍 */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">基本信息</h2>
-
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">咨询信息</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    姓名 <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    size="large"
-                    placeholder="请输入您的姓名"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    专业领域 <span className="text-red-500">*</span>
-                  </label>
-                  <Select
-                    size="large"
-                    placeholder="请选择您的专业领域"
-                    className="w-full"
-                    value={formData.expertise}
-                    onChange={(value) => setFormData({ ...formData, expertise: value })}
-                  >
-                    <Option value="frontend">前端开发</Option>
-                    <Option value="backend">后端开发</Option>
-                    <Option value="algorithm">算法与数据结构</Option>
-                    <Option value="mobile">移动开发</Option>
-                    <Option value="ai">人工智能</Option>
-                    <Option value="architecture">系统架构</Option>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">从业年限</label>
-                  <Input
-                    size="large"
-                    placeholder="例如：5年"
-                    value={formData.experience}
-                    onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    咨询费用（元/小时） <span className="text-red-500">*</span>
+                    单次咨询价格（元） <span className="text-red-500">*</span>
                   </label>
                   <Input
                     size="large"
                     type="number"
-                    placeholder="请输入您的咨询费用"
-                    value={formData.hourlyRate}
-                    onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
+                    placeholder="请输入单次咨询价格"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   />
                 </div>
-              </div>
-            </div>
 
-            {/* 个人介绍 */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">个人介绍</h2>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">专业简介</label>
-                <TextArea
-                  rows={6}
-                  placeholder="请介绍您的专业背景、工作经验、擅长领域等..."
-                  value={formData.introduction}
-                  onChange={(e) => setFormData({ ...formData, introduction: e.target.value })}
-                />
-                <p className="text-xs text-gray-500 mt-2">建议详细描述您的专业能力和服务内容</p>
-              </div>
-            </div>
-
-            {/* 资质证明 */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">资质证明</h2>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  上传证书或作品
-                </label>
-                <Upload listType="picture-card" maxCount={5} beforeUpload={() => false}>
-                  <div>
-                    <UploadOutlined />
-                    <div style={{ marginTop: 8 }}>上传</div>
-                  </div>
-                </Upload>
-                <p className="text-xs text-gray-500 mt-2">可上传相关证书、项目截图等，最多5张</p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">个人咨询介绍 <span className="text-red-500">*</span></label>
+                  <TextArea
+                    rows={6}
+                    placeholder="请介绍你的咨询方向、可提供的帮助、擅长领域等"
+                    value={formData.introduction}
+                    onChange={(e) => setFormData({ ...formData, introduction: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">尽量写清你的优势、可解答的问题类型</p>
+                </div>
               </div>
             </div>
 
@@ -142,8 +152,9 @@ const BecomeExpert: React.FC = () => {
                 size="large"
                 onClick={handleSubmit}
                 className="bg-blue-600 hover:bg-blue-700"
+                loading={isLoading || isFetchingDetail}
               >
-                提交申请
+                {isExpert ? '修改专家信息' : '我要成为专家'}
               </Button>
             </div>
           </div>

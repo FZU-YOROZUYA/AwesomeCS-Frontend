@@ -28,12 +28,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   if (isSeeker) {
-    // 咨询者消息：蓝底白字，右侧对齐
+    // 自己发的消息：右侧对齐，显示自己头像和“我”
     return (
       <div className="flex items-start space-x-3 flex-row-reverse">
         <img
           src={avatarUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face'}
-          alt="用户头像"
+          alt="我的头像"
           className="w-8 h-8 rounded-full mt-1"
         />
         <div className="flex-1 text-right">
@@ -50,12 +50,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     );
   }
 
-  // 专家消息：白底黑字，左侧对齐
+  // 对方消息：左侧对齐，显示对方头像和姓名
   return (
     <div className="flex items-start space-x-3">
       <img
         src={avatarUrl || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=32&h=32&fit=crop&crop=face'}
-        alt="专家头像"
+        alt="对方头像"
         className="w-8 h-8 rounded-full mt-1"
       />
       <div className="flex-1">

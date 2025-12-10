@@ -1,9 +1,9 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Popover } from 'antd';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 
 const ACLayout: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -19,7 +19,7 @@ const ACLayout: React.FC = () => {
                 <i className="fas fa-code text-white text-sm"></i>
               </div> */}
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              awesomeCS
+              AwesomeCS
             </span>
             {/* </div> */}
 
@@ -66,49 +66,31 @@ const ACLayout: React.FC = () => {
               </Link>
             </nav>
 
-            <Popover
-              content={
-                <div className="py-2">
-                  <Link
-                    to="/personal-info"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+            {
+              (function renderProfileArea() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                  return (
+                    <div
+                      role="button"
+                      onClick={() => navigate('/personal-info')}
+                      className="flex items-center cursor-pointer"
+                    >
+                      <span className="text-gray-700 font-medium">个人中心</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="text-sm text-blue-600 font-medium px-3 py-1 rounded hover:bg-blue-50"
                   >
-                    <i className="fas fa-user mr-2"></i>
-                    个人信息
-                  </Link>
-                  <Link
-                    to="personal-info/my-blogs"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
-                  >
-                    <i className="fas fa-blog mr-2"></i>
-                    我的博客
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
-                  >
-                    <i className="fas fa-sign-in-alt mr-2"></i>
                     登录
-                  </Link>
-                  <div className="border-t border-gray-200 my-2"></div>
-                  <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">
-                    <i className="fas fa-sign-out-alt mr-2"></i>
-                    退出登录
                   </button>
-                </div>
-              }
-              trigger="hover"
-              placement="bottomRight"
-            >
-              <div className="flex items-center space-x-3 cursor-pointer">
-                <img
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
-                  alt="用户头像"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <span className="text-gray-700 font-medium">张三</span>
-              </div>
-            </Popover>
+                );
+              })()
+            }
           </div>
         </div>
       </header>
