@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -25,7 +24,6 @@ const RegisterForm: React.FC = () => {
         params: {
           username,
           password,
-          phone,
           avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}`,
           target_job: 'Full Stack Developer',
           techs: 'Java,React',
@@ -53,7 +51,6 @@ const RegisterForm: React.FC = () => {
         }
         // Reset form
         setUsername('');
-        setPhone('');
         setPassword('');
         setConfirmPassword('');
         setAgreeTerms(false);
@@ -74,18 +71,6 @@ const RegisterForm: React.FC = () => {
           placeholder="用户名"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          size="large"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">手机号</label>
-        <Input
-          type="tel"
-          placeholder="手机号"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
           size="large"
           required
         />
@@ -123,10 +108,6 @@ const RegisterForm: React.FC = () => {
             服务条款
           </a>
         </Checkbox>
-      </div>
-
-      <div className="text-xs text-gray-500">
-        生力量使用中国，无法确保您的信息在本地和国际间传输（localStorage）时不泄露。
       </div>
 
       <Button

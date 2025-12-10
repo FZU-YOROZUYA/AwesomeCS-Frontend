@@ -178,20 +178,10 @@ export const PersonalInfoContent: React.FC = () => {
                   referrerPolicy="no-referrer"
                   className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 bg-gray-100"
                 />
-                <label
-                  htmlFor="avatarInput"
-                  className="absolute inset-0 w-24 h-24 rounded-full bg-transparent hover:bg-black hover:bg-opacity-40 flex items-center justify-center cursor-pointer transition-all group"
-                >
-                  <CameraOutlined className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </label>
-                <input id="avatarInput" ref={fileInputRef} onChange={onFileChange} type="file" accept="image/*" className="hidden" />
               </div>
             </div>
             <div className="flex-1 pt-8">
-              <p className="text-sm text-gray-600">点击头像可更换图片</p>
-              <p className="text-xs text-gray-500 mt-1">
-                支持 JPG、PNG 格式，建议尺寸 200x200 像素
-              </p>
+              <p className="text-sm text-gray-600">当前头像</p>
             </div>
           </div>
 
