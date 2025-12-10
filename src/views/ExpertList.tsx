@@ -89,7 +89,7 @@ const ExpertList: React.FC = () => {
           <div className="flex items-center gap-3">
             <Button
               size="large"
-              onClick={() => (window.location.href = 'http://localhost:3000/consultation-chat')}
+              onClick={() => navigate('/consultation-chat')}
             >
               进入咨询
             </Button>

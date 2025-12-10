@@ -40,8 +40,13 @@ const LearningPath: React.FC = () => {
     fetchHistory();
   }, []);
 
-  const handleClear = () => {
-    setMessages([]);
+  const handleClear = async () => {
+    try {
+      await axios.delete('/api/study_path');
+      setMessages([]);
+    } catch (err) {
+      console.error('clear study path failed', err);
+    }
   };
 
   const handleSend = async () => {
