@@ -94,9 +94,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={domain === '前端'}
                     onChange={() => setDomain('前端')}
-                    disabled={domain !== null && domain !== '前端'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '前端' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -124,9 +123,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={domain === '后端'}
                     onChange={() => setDomain('后端')}
-                    disabled={domain !== null && domain !== '后端'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '后端' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -154,9 +152,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={domain === '算法'}
                     onChange={() => setDomain('算法')}
-                    disabled={domain !== null && domain !== '算法'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '算法' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -184,9 +181,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={domain === '嵌入式'}
                     onChange={() => setDomain('嵌入式')}
-                    disabled={domain !== null && domain !== '嵌入式'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${domain !== null && domain !== '嵌入式' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -214,9 +210,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={domain === '移动开发'}
                     onChange={() => setDomain('移动开发')}
-                    disabled={domain !== null && domain !== '移动开发'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md max-w-md mx-auto ${domain !== null && domain !== '移动开发' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md max-w-md mx-auto`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -263,9 +258,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={style === '友好面'}
                     onChange={() => setStyle('友好面')}
-                    disabled={style !== null && style !== '友好面'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '友好面' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -293,9 +287,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={style === '专业面'}
                     onChange={() => setStyle('专业面')}
-                    disabled={style !== null && style !== '专业面'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '专业面' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -323,9 +316,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={style === '压力面'}
                     onChange={() => setStyle('压力面')}
-                    disabled={style !== null && style !== '压力面'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '压力面' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
@@ -353,9 +345,8 @@ const AIInterviewCreate: React.FC = () => {
                     className="sr-only peer"
                     checked={style === '引导面'}
                     onChange={() => setStyle('引导面')}
-                    disabled={style !== null && style !== '引导面'}
                   />
-                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${style !== null && style !== '引导面' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div className={`border-2 border-gray-200 rounded-xl p-6 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md`}>
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
                         <svg
