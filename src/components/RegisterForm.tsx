@@ -20,7 +20,7 @@ const RegisterForm: React.FC = () => {
     
     try {
       // Using default values for fields not present in the form yet
-      const response = await axios.post('http://localhost:8085/api/user/register', null, {
+      const response = await axios.post('/api/user/register', null, {
         params: {
           username,
           password,
@@ -35,7 +35,7 @@ const RegisterForm: React.FC = () => {
         message.success('注册成功，正在为您登录');
         // 自动登录
         try {
-          const loginResp = await axios.post('http://localhost:8085/api/user/login/username', null, {
+          const loginResp = await axios.post('/api/user/login/username', null, {
             params: { username, password }
           });
           if (loginResp.data.code === '0000') {

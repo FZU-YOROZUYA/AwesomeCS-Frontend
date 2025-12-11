@@ -8,7 +8,7 @@ RUN npm ci
 
 # Build
 COPY . .
-RUN npm run build
+RUN npx rsbuild build
 
 # Serve stage
 FROM nginx:1.27-alpine
