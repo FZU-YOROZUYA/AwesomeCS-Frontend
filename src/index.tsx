@@ -7,8 +7,8 @@ import App from './App';
 
 const rootEl = document.getElementById('root');
 if (rootEl) {
-  // 全局 axios baseURL，确保所有相对请求都指向后端 localhost:8085
-  axios.defaults.baseURL = 'http://localhost:8085';
+  // 全局 axios baseURL，确保所有相对请求都指向后端服务器
+  axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8085';
   // 如果本地存有 token，则在应用启动时设置 Authorization 头（支持页面刷新后保留登录）
   const savedToken = localStorage.getItem('token');
   if (savedToken) {

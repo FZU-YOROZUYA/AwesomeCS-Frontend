@@ -222,7 +222,8 @@ const ConsultationChatInner: React.FC = () => {
   // 单一 WebSocket 连接 /ws/consultation
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const urlBase = 'ws://localhost:8085/ws/consultation';
+    const baseURL = axios.defaults.baseURL || 'http://localhost:8085';
+    const urlBase = baseURL.replace('http', 'ws') + '/ws/consultation';
     const url = token ? `${urlBase}?token=${token}` : urlBase;
 
     const ws = new WebSocket(url);
