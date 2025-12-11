@@ -125,7 +125,6 @@ const ExpertCard: React.FC<ExpertCardProps> = ({
 
       <div className="flex justify-between items-center mb-3">
         <span className="text-2xl font-bold text-orange-600">￥{price}</span>
-        <span className="text-gray-500 text-sm">/小时</span>
       </div>
 
       {consultationCount !== undefined && (

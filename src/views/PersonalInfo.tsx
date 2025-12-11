@@ -75,6 +75,7 @@ export const PersonalInfoContent: React.FC = () => {
   const [username, setUsername] = useState<string>('张三');
   const [bio, setBio] = useState<string>('');
   const [techs, setTechs] = useState<string[]>([]); // string list
+  const [techInput, setTechInput] = useState<string>('');
   const [targetJob, setTargetJob] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -97,9 +98,11 @@ export const PersonalInfoContent: React.FC = () => {
         await axios.post('/api/user/avatar/update', { avatar: avatarPreview });
       }
 
-      // 2) profile update: 仅发送 bio 字段，后端允许接收部分字段
+      // 2) profile update: 发送 bio、targetJob、techs
       await axios.post('/api/user/profile/update', {
         bio: bio,
+        target_job: targetJob,
+        techs: techs,
       });
 
       alert('保存成功');
@@ -134,17 +137,28 @@ export const PersonalInfoContent: React.FC = () => {
               setAvatarPreview(defaultAvatar);
             }
             setBio(d.bio || '');
-            setTargetJob(d.targetJob || '');
+            setTargetJob(d.target_job || d.targetJob || '');
             if (Array.isArray(d.techs)) {
-              setTechs(d.techs as string[]);
+              const arr = d.techs as string[];
+              setTechs(arr);
+              setTechInput(arr.join(', '));
             } else if (d.techs) {
               // 如果后端以字符串返回，也尝试解析
               try {
                 const parsed = JSON.parse(d.techs);
-                if (Array.isArray(parsed)) setTechs(parsed.map(String));
-                else setTechs(String(d.techs).split(',').map((s: string) => s.trim()).filter(Boolean));
+                if (Array.isArray(parsed)) {
+                  const arr = parsed.map(String);
+                  setTechs(arr);
+                  setTechInput(arr.join(', '));
+                } else {
+                  const arr = String(d.techs).split(',').map((s: string) => s.trim()).filter(Boolean);
+                  setTechs(arr);
+                  setTechInput(arr.join(', '));
+                }
               } catch (e) {
-                setTechs(String(d.techs).split(',').map((s: string) => s.trim()).filter(Boolean));
+                const arr = String(d.techs).split(',').map((s: string) => s.trim()).filter(Boolean);
+                setTechs(arr);
+                setTechInput(arr.join(', '));
               }
             }
           }
@@ -229,8 +243,12 @@ export const PersonalInfoContent: React.FC = () => {
             <label className="block text-sm font-semibold text-gray-900 mb-3">技术栈 <span className="text-gray-400 text-xs font-normal">(选填)</span></label>
             <input
               type="text"
-              value={techs.join(', ')}
-              onChange={(e) => setTechs(e.target.value.split(',').map((s) => s.trim()).filter((s) => s.length > 0))}
+              value={techInput}
+              onChange={(e) => {
+                const val = e.target.value;
+                setTechInput(val);
+                setTechs(val.split(',').map((s) => s.trim()).filter((s) => s.length > 0));
+              }}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
               placeholder="多个技术请用逗号分隔，例如：Java, Spring, MySQL"
             />
