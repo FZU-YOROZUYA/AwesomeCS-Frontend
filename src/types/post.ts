@@ -82,6 +82,9 @@ export interface UpdatePostRequest {
 export interface CommentResponse {
   /** 评论ID */
   id: number;
+  /** 后端可能返回的别名 */
+  comment_id?: number;
+  commentId?: number;
   /** 评论内容 */
   content: string;
   /** 用户头像 */
